@@ -1,0 +1,27 @@
+services:
+  go:
+    image: "mcr.microsoft.com/devcontainers/go:1-1.22-bookworm"
+    volumes:
+      - ./:/go/src/app
+    ports:
+      - 3000:3000
+    tty:  true
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=devbook
+      - DB_USER=fibralink
+      - DB_PASS=2345678
+  db:
+    image: postgres:16
+    volumes:
+      - ./data:/var/lib/postgresql/data
+      - ./backup:/docker-entrypoint-initdb.d 
+    ports:
+      - 2345:5432
+    environment:
+      POSTGRES_PASSWORD : "2345678"
+      POSTGRES_USER : "fibralink"
+      POSTGRES_DB : "devbook"
