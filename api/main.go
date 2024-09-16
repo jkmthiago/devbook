@@ -16,6 +16,6 @@ func main() {
 
 	r := router.GenerateNewRoute()
 
-	log.Fatal(http.ListenAndServe(fmt.Sprintf("%d", config.Api_port), r))
-	fmt.Printf("Api is Running on port %d\n", config.Api_port)
+	fmt.Printf("Api is Running on port %s\n", config.Api_port)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", config.Api_port), r))
 }
