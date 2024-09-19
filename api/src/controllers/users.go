@@ -1,14 +1,18 @@
 package controllers
 
 import (
+	"api/src/answers"
+	"api/src/authentication"
 	"api/src/db"
 	"api/src/models"
 	"api/src/repositorys"
+	"api/src/security"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -18,24 +22,28 @@ import (
 // CREATE - POST
 // Cria um novo usuário no banco de dados
 func CreateUser(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Creating a new user"))
 
 	requestBody, err := io.ReadAll(r.Body)
 	if err != nil {
-		w.Write([]byte("Error reading request body"))
+		answers.Erro(w, http.StatusUnprocessableEntity, err)
 		return
 	}
 
 	var user models.User
 
 	if err = json.Unmarshal(requestBody, &user); err != nil {
-		w.Write([]byte("Error converting request to struct"))
+		answers.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	if err = user.Prepare("register"); err != nil {
+		answers.Erro(w, http.StatusBadRequest, err)
 		return
 	}
 
 	bd, err := db.LoadDataBase()
 	if err != nil {
-		w.Write([]byte("Error connecting to the database, please check if it's online"))
+		answers.Erro(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -44,174 +52,345 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	repository := repositorys.NewUsersRepository(bd)
 	userId, err := repository.CreateUser(user)
 	if err != nil {
-		w.Write([]byte("Error creating the user, please check the parameters"))
+		answers.Erro(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusAccepted)
-	w.Write([]byte(fmt.Sprintf("Usuário criado com sucesso\nID: %d", userId)))
+	answers.JSON(w, http.StatusCreated, userId)
 }
 
-// READ 01 - GET PER ID
-// Busca um usuário específico
-func ReadUser(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Searching the user indicated"))
-
-	parameters := mux.Vars(r)
-
-	id, err := strconv.ParseUint(parameters["id"], 10, 64)
-	if err != nil {
-		w.Write([]byte("Error trying to colect the id to be searched and convert to integer"))
-		return
-	}
+// READ - GET
+// Busca usuários com nome ou nick parecido
+func ReadUsers(w http.ResponseWriter, r *http.Request) {
+	nameOrNick := strings.ToLower((r.URL.Query().Get("user")))
 
 	bd, err := db.LoadDataBase()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Error trying to connect to Database, please check if it's online!"))
+		answers.Erro(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	defer bd.Close()
 
 	repository := repositorys.NewUsersRepository(bd)
-	searchedUser, err := repository.ReadUser(id)
+	searchedUsers, err := repository.ReadUsers(nameOrNick)
 	if err != nil {
-		w.Write([]byte("Error Getting data of this user"))
+		answers.Erro(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusAccepted)
-	if err := json.NewEncoder(w).Encode(searchedUser); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Error creating the struct body into JSON"))
-		return
-	}
+	answers.JSON(w, http.StatusOK, searchedUsers)
 }
 
-// READ 02 - GET THEM ALL
-// Busca todos os usuários do banco de dados
-func ReadUsers(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Searching for all users in the database"))
+// READ 02 - GET
+// Busca um usuário específico
+func ReadUser(w http.ResponseWriter, r *http.Request) {
+	parameters := mux.Vars(r)
+	userId, err := strconv.ParseUint(parameters["id"], 10, 64)
+	if err != nil {
+		answers.Erro(w, http.StatusBadRequest, err)
+		return
+	}
 
 	bd, err := db.LoadDataBase()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Error trying to connect to Database, please check if it's online!"))
+		answers.Erro(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	defer bd.Close()
 
-	lines, err := bd.Query("select * from users")
+	repository := repositorys.NewUsersRepository(bd)
+	searchedUser, err := repository.ReadUser(userId)
 	if err != nil {
-		w.Write([]byte("Error searching for users, please check if the database is online!"))
+		answers.Erro(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	defer lines.Close()
-
-	var users []models.User
-	for lines.Next() {
-		var user models.User
-
-		if err := lines.Scan(&user.Id, &user.Name, &user.Nick, &user.Email, &user.Password, &user.CreatedIn); err != nil {
-			w.Write([]byte("Error creating users body"))
-			return
-		}
-
-		users = append(users, user)
-	}
-
-	w.WriteHeader(http.StatusAccepted)
-	if err := json.NewEncoder(w).Encode(users); err != nil {
-		w.Write([]byte("Error creating the struct body into JSON"))
-		return
-	}
+	answers.JSON(w, http.StatusOK, searchedUser)
 }
 
 // UPDATE - PUT INSIDE NEW TOYS AND TAKE OUT THE BROKEN ONES
 // Atualiza um usuário específico no banco de dados
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Updating a especific user"))
-
 	parameters := mux.Vars(r)
 
 	id, err := strconv.ParseUint(parameters["id"], 10, 64)
 	if err != nil {
-		w.Write([]byte("Error converting the id to integer"))
+		answers.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	userIdOnToken, err := authentication.ExtractUserId(r)
+	if err != nil {
+		answers.Erro(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	if id != userIdOnToken {
+		answers.Erro(w, http.StatusForbidden, errors.New("it is not possible to change anothe user that ir is not yourself"))
 		return
 	}
 
 	requestBody, err := io.ReadAll(r.Body)
 	if err != nil {
-		w.Write([]byte("Error reading the request body, please review the request body!"))
+		answers.Erro(w, http.StatusUnprocessableEntity, err)
 		return
 	}
 
 	var user models.User
 	if err := json.Unmarshal(requestBody, &user); err != nil {
-		w.Write([]byte("Error converting the request body into struct"))
+		answers.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	if err := user.Prepare("edit"); err != nil {
+		answers.Erro(w, http.StatusBadRequest, err)
 		return
 	}
 
 	bd, err := db.LoadDataBase()
 	if err != nil {
-		w.Write([]byte("Error trying t connect to Database, please check if is's online"))
+		answers.Erro(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	defer bd.Close()
 
-	statement, err := bd.Prepare("update user set name = $1, nick = $2, email = $3, password = $4 where id = $5")
-	if err != nil {
-		w.Write([]byte("Error creating the statement"))
+	repository := repositorys.NewUsersRepository(bd)
+	if err := repository.UpdateUser(id, user); err != nil {
+		answers.Erro(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	defer statement.Close()
-
-	if _, err := statement.Exec(user.Name, user.Nick, user.Email, user.Password, id); err != nil {
-		w.Write([]byte("Error updating user"))
-		return
-	}
-
-	w.Write([]byte("User updated successfully"))
+	answers.JSON(w, http.StatusNoContent, nil)
 }
 
 // DELETE - DELETE AND KILL THAT MOT********R
 // Deleta um usuário específico no banco de dados
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Deleting a especific user"))
-
 	parameters := mux.Vars(r)
 
 	id, err := strconv.ParseUint(parameters["id"], 10, 64)
 	if err != nil {
-		w.Write([]byte("Error converting id to integer!"))
+		answers.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	userIdOnToken, err := authentication.ExtractUserId(r)
+	if err != nil {
+		answers.Erro(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	if id != userIdOnToken {
+		answers.Erro(w, http.StatusForbidden, errors.New("it is not possible to change anothe user that ir is not yourself"))
 		return
 	}
 
 	bd, err := db.LoadDataBase()
 	if err != nil {
-		w.Write([]byte("Error trying to connecto to the database, please check if it's online!"))
+		answers.Erro(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	defer bd.Close()
 
-	statement, err := bd.Prepare("delete from users where id = $1")
+	repository := repositorys.NewUsersRepository(bd)
+	if err = repository.DeleteUser(id); err != nil {
+		answers.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	answers.JSON(w, http.StatusOK, nil)
+}
+
+// POST - POST THAT I AM WITH U
+// Cria o sequimento de outro usuário
+func FollowUser(w http.ResponseWriter, r *http.Request) {
+	follower_id, err := authentication.ExtractUserId(r)
 	if err != nil {
-		w.Write([]byte("Error creating the statement"))
+		answers.Erro(w, http.StatusUnauthorized, err)
 		return
 	}
 
-	defer statement.Close()
+	parameters := mux.Vars(r)
 
-	if _, err := statement.Exec(id); err != nil {
-		w.Write([]byte("Erro trying to delete the user"))
+	user_id, err := strconv.ParseUint(parameters["id"], 10, 64)
+	if err != nil {
+		answers.Erro(w, http.StatusBadRequest, err)
 		return
 	}
-	w.WriteHeader(http.StatusAccepted)
-	w.Write([]byte("User deleted succesfully"))
+
+	if user_id == follower_id {
+		answers.Erro(w, http.StatusForbidden, errors.New("impossible to follow youtself"))
+		return
+	}
+
+	bd, err := db.LoadDataBase()
+	if err != nil {
+		answers.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	defer bd.Close()
+
+	repository := repositorys.NewUsersRepository(bd)
+	if err = repository.FollowUser(user_id, follower_id); err != nil {
+		answers.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	answers.JSON(w, http.StatusNoContent, nil)
+}
+
+func UnfollowUser(w http.ResponseWriter, r *http.Request) {
+	follower_id, err := authentication.ExtractUserId(r)
+	if err != nil {
+		answers.Erro(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	parameters := mux.Vars(r)
+	user_id, err := strconv.ParseUint(parameters["id"], 10, 64)
+	if err != nil {
+		answers.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	if user_id == follower_id {
+		answers.Erro(w, http.StatusForbidden, errors.New("impossible to unfollow youtself"))
+		return
+	}
+
+	bd, err := db.LoadDataBase()
+	if err != nil {
+		answers.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	repository := repositorys.NewUsersRepository(bd)
+	if err = repository.UnfollowUser(user_id, follower_id); err != nil {
+		answers.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	answers.JSON(w, http.StatusNoContent, nil)
+}
+
+func UserFollowers(w http.ResponseWriter, r *http.Request) {
+	parameters := mux.Vars(r)
+	user_id, err := strconv.ParseUint(parameters["id"], 10, 64)
+	if err != nil {
+		answers.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	bd, err := db.LoadDataBase()
+	if err != nil {
+		answers.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	repository := repositorys.NewUsersRepository(bd)
+	followers, err := repository.UserFollowers(user_id)
+	if err != nil {
+		answers.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	answers.JSON(w, http.StatusAccepted, followers)
+}
+
+func Following(w http.ResponseWriter, r *http.Request) {
+	parameters := mux.Vars(r)
+	follower_id, err := strconv.ParseUint(parameters["id"], 10, 64)
+	if err != nil {
+		answers.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	bd, err := db.LoadDataBase()
+	if err != nil {
+		answers.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	repository := repositorys.NewUsersRepository(bd)
+	following, err := repository.Following(follower_id)
+	if err != nil {
+		answers.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	answers.JSON(w, http.StatusAccepted, following)
+}
+
+func UpdatePassword(w http.ResponseWriter, r *http.Request) {
+	userIdOnToken, err := authentication.ExtractUserId(r)
+	if err != nil {
+		answers.Erro(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	parameters := mux.Vars(r)
+
+	user_id, err := strconv.ParseUint(parameters["id"], 10, 64)
+	if err != nil {
+		answers.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	if user_id != userIdOnToken {
+		answers.Erro(w, http.StatusForbidden, errors.New("not authorized to change anothers password"))
+		return
+	}
+
+	requestBody, err := io.ReadAll(r.Body)
+	if err != nil {
+		answers.Erro(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	var password models.Password
+	if err = json.Unmarshal(requestBody, &password); err != nil {
+		answers.Erro(w, http.StatusBadRequest, err)
+		return
+	} else if password.New_Password == password.Old_Password {
+		answers.Erro(w, http.StatusBadRequest, errors.New("the passwords are the same"))
+		return
+	}
+
+	bd, err := db.LoadDataBase()
+	if err != nil {
+		answers.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	defer bd.Close()
+
+	repository := repositorys.NewUsersRepository(bd)
+	passwordOnTheBank, err := repository.SearchPassword(user_id)
+	if err != nil {
+		answers.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	if err := security.VerifyPassword(passwordOnTheBank, password.Old_Password); err != nil {
+		answers.Erro(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	newHashPassword, err := security.Hash(password.New_Password)
+	if err != nil {
+		answers.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	if err = repository.UpdatePassword(user_id, string(newHashPassword)); err != nil {
+		answers.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	answers.JSON(w, http.StatusNoContent, nil)
 }

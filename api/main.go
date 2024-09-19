@@ -10,7 +10,7 @@ import (
 
 func main() {
 	fmt.Println("Charging prerequisites")
-	config.LoadEnvVar()
+	config.LoadEnvVar()	
 
 	fmt.Println("Charging Api")
 
