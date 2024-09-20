@@ -25,15 +25,33 @@ var postsRouts = []Route{
 		AuthenticationIsRequired: true,
 	},
 	{
+		Uri:                      "/users/{user_id}/posts",
+		Method:                   http.MethodGet,
+		Funtion:                  controllers.SearchPostsFromUser,
+		AuthenticationIsRequired: true,
+	},
+	{
 		Uri:                      "/posts/{post_id}",
 		Method:                   http.MethodPut,
 		Funtion:                  controllers.UpdatePost,
 		AuthenticationIsRequired: true,
 	},
 	{
-		Uri:                      "/users",
+		Uri:                      "/posts/{post_id}",
 		Method:                   http.MethodDelete,
 		Funtion:                  controllers.DeletePost,
+		AuthenticationIsRequired: true,
+	},
+	{
+		Uri:                      "/posts/{post_id}/like",
+		Method:                   http.MethodPost,
+		Funtion:                  controllers.Like,
+		AuthenticationIsRequired: true,
+	},
+	{
+		Uri:                      "/posts/{post_id}/unlike",
+		Method:                   http.MethodPut,
+		Funtion:                  controllers.Unlike,
 		AuthenticationIsRequired: true,
 	},
 }

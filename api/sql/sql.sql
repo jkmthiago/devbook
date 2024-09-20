@@ -35,8 +35,8 @@ CREATE TABLE followers (
 CREATE TABLE posts (
 	id serial NOT NULL,
 	CONSTRAINT posts_pk PRIMARY KEY (id),
-	title varchar(50) NOT NULL unique,
-	content varchar(500) NOT NULL unique,
+	title varchar(50) NOT NULL,
+	content varchar(500) NOT NULL,
 
 	autor_id int not null,
 	CONSTRAINT fk_autor

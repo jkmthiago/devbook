@@ -3,7 +3,6 @@ package repositorys
 import (
 	"api/src/models"
 	"database/sql"
-	"fmt"
 )
 
 type Users struct {
@@ -95,7 +94,6 @@ func (repository Users) ReadUser(id uint64) (models.User, error) {
 func (repository Users) UpdateUser(id uint64, user models.User) error {
 	statement, err := repository.database.Prepare("update users set name = $1, nick = $2, email = $3 where id = $4")
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 
@@ -255,7 +253,7 @@ func (repository Users) SearchPassword(user_id uint64) (string, error) {
 	return user.Password, nil
 }
 
-func (repository Users) UpdatePassword (user_id uint64, newPassword string) error {
+func (repository Users) UpdatePassword(user_id uint64, newPassword string) error {
 	statement, err := repository.database.Prepare("update users set password = $1 where id = $2")
 	if err != nil {
 		return err
@@ -263,7 +261,7 @@ func (repository Users) UpdatePassword (user_id uint64, newPassword string) erro
 
 	defer statement.Close()
 
-	if _, err := statement.Exec(newPassword, user_id); err != nil{
+	if _, err := statement.Exec(newPassword, user_id); err != nil {
 		return err
 	}
 	return nil

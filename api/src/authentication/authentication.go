@@ -12,6 +12,7 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
+// Cria um token de acesso do login do usuário com algumas permissões ja embuídas
 func CreateToken(id uint64) (string, error) {
 	permissions := jwt.MapClaims{}
 	permissions["authorized"] = true
@@ -22,6 +23,7 @@ func CreateToken(id uint64) (string, error) {
 	return token.SignedString([]byte(config.Secret_key))
 }
 
+// Valida se o token inserido é válido e pode ser usado para acessar o recurso solicitado
 func ValidateToken(r *http.Request) error {
 	tokenString := extractToken(r)
 	token, err := jwt.Parse(tokenString, returnSecretKey)
@@ -45,6 +47,7 @@ func returnSecretKey(token *jwt.Token) (interface{}, error) {
 	return []byte(config.Secret_key), nil
 }
 
+// Extrai o Token de acesso do usuário
 func extractToken(r *http.Request) string {
 	token := r.Header.Get("Authorization")
 
@@ -55,6 +58,7 @@ func extractToken(r *http.Request) string {
 	return ""
 }
 
+// Extrai o id do usuário no token gerado.
 func ExtractUserId(r *http.Request) (uint64, error) {
 	tokenString := extractToken(r)
 	token, err := jwt.Parse(tokenString, returnSecretKey)

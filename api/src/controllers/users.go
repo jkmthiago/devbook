@@ -50,13 +50,13 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	defer bd.Close()
 
 	repository := repositorys.NewUsersRepository(bd)
-	userId, err := repository.CreateUser(user)
+	user.Id, err = repository.CreateUser(user)
 	if err != nil {
 		answers.Erro(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	answers.JSON(w, http.StatusCreated, userId)
+	answers.JSON(w, http.StatusCreated, user)
 }
 
 // READ - GET
@@ -244,6 +244,7 @@ func FollowUser(w http.ResponseWriter, r *http.Request) {
 	answers.JSON(w, http.StatusNoContent, nil)
 }
 
+// Remove o seguimento de outro usuário
 func UnfollowUser(w http.ResponseWriter, r *http.Request) {
 	follower_id, err := authentication.ExtractUserId(r)
 	if err != nil {
@@ -278,6 +279,7 @@ func UnfollowUser(w http.ResponseWriter, r *http.Request) {
 	answers.JSON(w, http.StatusNoContent, nil)
 }
 
+// Busca e retorna todos os usuários que seguem outro usuário
 func UserFollowers(w http.ResponseWriter, r *http.Request) {
 	parameters := mux.Vars(r)
 	user_id, err := strconv.ParseUint(parameters["id"], 10, 64)
@@ -302,6 +304,7 @@ func UserFollowers(w http.ResponseWriter, r *http.Request) {
 	answers.JSON(w, http.StatusAccepted, followers)
 }
 
+// Retorna os usuários que quem solicitou está seguindo
 func Following(w http.ResponseWriter, r *http.Request) {
 	parameters := mux.Vars(r)
 	follower_id, err := strconv.ParseUint(parameters["id"], 10, 64)
@@ -326,6 +329,7 @@ func Following(w http.ResponseWriter, r *http.Request) {
 	answers.JSON(w, http.StatusAccepted, following)
 }
 
+// Atualiza a senha de acesso do usuário que solicitou.
 func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	userIdOnToken, err := authentication.ExtractUserId(r)
 	if err != nil {
