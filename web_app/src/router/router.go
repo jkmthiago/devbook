@@ -1,7 +1,12 @@
 package router
 
-import "github.com/gorilla/mux"
+import (
+	"web_app/src/router/routs"
 
-func Generate() *mux.Router  {
-	return mux.NewRouter()
+	"github.com/gorilla/mux"
+)
+
+func Generate() *mux.Router {
+	r := mux.NewRouter()
+	return routs.RouteConfig(r)
 }

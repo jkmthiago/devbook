@@ -15,10 +15,14 @@ type Route struct {
 
 func RouteConfig(router *mux.Router) *mux.Router {
 	webAppRoutes := loginRouts
-	
-	for _, webRoute := range webAppRoutes{
+	webAppRoutes = append(webAppRoutes, userRoutes...)
+
+	for _, webRoute := range webAppRoutes {
 		router.HandleFunc(webRoute.URI, webRoute.Function).Methods(webRoute.Method)
 	}
+
+	fileServer := http.FileServer(http.Dir("./assets/"))
+	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", fileServer))
 
 	return router
 }

@@ -5,6 +5,7 @@ services:
       - ./:/go/src/app
     ports:
       - 3000:3000
+      - 5000:5000
     tty:  true
     depends_on:
       - db
