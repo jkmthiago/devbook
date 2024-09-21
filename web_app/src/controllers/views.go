@@ -12,3 +12,7 @@ func LoadLoginPage(w http.ResponseWriter, r *http.Request) {
 func LoadRegisterPage(w http.ResponseWriter, r *http.Request) {
 	utils.ExecTemplates(w, "register.html", nil)
 }
+
+func LoadHomePage(w http.ResponseWriter, r *http.Request)  {
+	utils.ExecTemplates(w, "home.html", nil)
+}

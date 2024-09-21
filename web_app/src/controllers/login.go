@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"web_app/src/answers"
 	"web_app/src/config"
+	"web_app/src/cookies"
 	"web_app/src/models"
 )
 
@@ -32,6 +33,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	defer response.Body.Close()
 
+	fmt.Println(response.StatusCode)
+
 	if response.StatusCode >= 400 {
 		answers.Erro(w, *response)
 		return
@@ -39,6 +42,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	var authenticationData models.AuthenticationData
 	if err = json.NewDecoder(response.Body).Decode(&authenticationData); err != nil {
+		answers.JSON(w, http.StatusUnprocessableEntity, answers.Error{Erro: err.Error()})
+		return
+	}
+
+	if err = cookies.SaveAuthData(w, authenticationData.Id, authenticationData.Token); err != nil {
 		answers.JSON(w, http.StatusUnprocessableEntity, answers.Error{Erro: err.Error()})
 		return
 	}

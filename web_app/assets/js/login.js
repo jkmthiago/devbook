@@ -5,7 +5,7 @@ function loginUser(event) {
     console.log("Formulário enviado");
 
     $.ajax({
-        uls: "/login",
+        url: "/login",
         method: "POST",
         data: {
             email: $('#email').val(),
