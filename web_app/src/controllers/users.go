@@ -3,17 +3,18 @@ package controllers
 import (
 	"bytes"
 	"encoding/json"
-	"log"
+	"fmt"
 	"net/http"
 	"web_app/src/answers"
+	"web_app/src/config"
 )
 
 func RegisterNewUser(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
 	user, err := json.Marshal(map[string]string{
-		"nome":     r.FormValue("name"),
-		"nicl":     r.FormValue("nick"),
+		"name":     r.FormValue("name"),
+		"nick":     r.FormValue("nick"),
 		"email":    r.FormValue("email"),
 		"password": r.FormValue("password"),
 	})
@@ -22,7 +23,8 @@ func RegisterNewUser(w http.ResponseWriter, r *http.Request) {
 		answers.JSON(w, http.StatusBadRequest, answers.Error{Erro: err.Error()})
 	}
 
-	response, err := http.Post("http://localhost:5000/users", "application/json", bytes.NewBuffer(user))
+	url := fmt.Sprintf("%s/users", config.ApiURL)
+	response, err := http.Post(url, "application/json", bytes.NewBuffer(user))
 	if err != nil {
 		answers.JSON(w, http.StatusInternalServerError, answers.Error{Erro: err.Error()})
 	}
@@ -34,5 +36,6 @@ func RegisterNewUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	answers.JSON(w, response.StatusCode, nil)
+	fmt.Println(response.StatusCode)
+	answers.JSON(w, response.StatusCode, "{}")
 }

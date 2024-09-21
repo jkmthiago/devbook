@@ -11,18 +11,19 @@ function registerUser(event) {
     }
 
     $.ajax({
-        uls: "/register",
+        url: "/register",
         method: "POST",
         data: {
             name: $('#name').val(),
             nick: $('#nick').val(),
             email: $('#email').val(),
             password: $('#password').val()
-        }
+        },
+        dataType: "text"
     }).done(function () {
-        alert("Usuário cadastrado com sucesso!")
+        alert("Usuário cadastrado com sucesso!");
     }).fail(function (erro) {
         console.log(erro)
-        alert("Erro ao cadastrar o Usuário!")
-    })
+        alert("Erro ao cadastrar o usuário!");
+    });       
 }

@@ -7,7 +7,7 @@ body {
     height: 35%;
 }
 
-#form {
+#login_form {
     display: grid;
     place-items: center;
     width: 300px;
@@ -20,7 +20,7 @@ body {
     margin: 218px auto 0 auto;
 }
 
-#form-body {
+#login_form-body {
     position: absolute;
     top: 50%;
     right: 25px;
