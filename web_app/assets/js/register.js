@@ -5,7 +5,11 @@ function registerUser(event) {
     console.log("Formulário enviado");
 
     if ($('#password').val() !== $('#confirme_password').val()) {
-        alert("As senhas não coincidem");
+        Swal.fire(
+            "Senhas não conferem",
+            "Por gentileza confirme se a senha inserida é a mesma nos dois campos",
+            "error"
+        )
         $('#confirme_password').focus();
         return;
     }
@@ -21,9 +25,19 @@ function registerUser(event) {
         },
         dataType: "text"
     }).done(function () {
-        alert("Usuário cadastrado com sucesso!");
+        Swal.fire(
+            'Sucesso',
+            'Usuário Cadastrado com Sucesso',
+            'success'
+        ).then(function () {
+            window.location.href = "/login"
+        })
     }).fail(function (erro) {
         console.log(erro)
-        alert("Erro ao cadastrar o usuário!");
+        Swal.fire(
+            'Erro',
+            'Erro ao cadastrar o usuário!',
+            'error'
+        );
     });       
 }

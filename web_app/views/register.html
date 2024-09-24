@@ -1,50 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DevBook - WebApp</title>
-    <link rel="stylesheet" type="text/css" href="/assets/css/register.css">  
+    <link rel="stylesheet" type="text/css" href="/assets/css/register.css">
 </head>
-    <body>
-        <div id="form-ui">
-            <form action="" method="post" id="register_form">
-                <div id="form-body">
-                    <div id="welcome-lines">
-                        <div id="welcome-line-1">
-                            DevBook
-                            <!-- <img class="img_logo" src="/assets/imgs/logo.png" alt=""> -->
-                        </div>
-                        <div id="welcome-line-2">Crie sua conta agora mesmo</div>
+
+<body>
+    <div id="form-ui">
+        <form action="" method="post" id="register_form">
+            <div id="form-body">
+                <div id="welcome-lines">
+                    <div id="welcome-line-1">
+                        DevBook
+                        <!-- <img class="img_logo" src="/assets/imgs/logo.png" alt=""> -->
                     </div>
-                    <div id="input-area">
-                        <div class="form-inp">
-                            <input placeholder="Digite seu Nome" type="text" name="name" id="name" required="required">
-                        </div>
-                        <div class="form-inp">
-                            <input placeholder="Digite seu Nome de Usuário" type="text" name="nick" id="nick" required="required">
-                        </div>
-                        <div class="form-inp">
-                            <input placeholder="Digite seu endereço de Email" type="text" name="email" id="email" required="required">
-                        </div>
-                        <div class="form-inp">
-                            <input placeholder="Digite sua Senha" type="password" name="password" id="password" required="required">
-                        </div>
-                        <div class="form-inp">
-                            <input placeholder="Confirme sua Senha" type="password" name="confirme_password" id="confirme_password" required="required">
-                        </div>
-                    </div>
-                    <div id="submit-button-cvr">
-                        <button id="submit-button" type="submit">Registrar</button>
-                    </div>
-                    <div id="forgot-pass">
-                        <a href="/login">Já possúi uma conta?</a>
-                    </div>
-                    <div id="bar"></div>
+                    <div id="welcome-line-2">Crie sua conta agora mesmo</div>
                 </div>
-            </form>
-        </div>
-        <script src="/assets/js/jquery.min.js"></script>
-        <script src="/assets/js/register.js"></script>
-    </body>
+                <div id="input-area">
+                    <div class="form-inp">
+                        <input placeholder="Digite seu Nome" type="text" name="name" id="name" required="required">
+                    </div>
+                    <div class="form-inp">
+                        <input placeholder="Digite seu Nome de Usuário" type="text" name="nick" id="nick"
+                            required="required">
+                    </div>
+                    <div class="form-inp">
+                        <input placeholder="Digite seu endereço de Email" type="text" name="email" id="email"
+                            required="required">
+                    </div>
+                    <div class="form-inp">
+                        <input placeholder="Digite sua Senha" type="password" name="password" id="password"
+                            required="required">
+                    </div>
+                    <div class="form-inp">
+                        <input placeholder="Confirme sua Senha" type="password" name="confirme_password"
+                            id="confirme_password" required="required">
+                    </div>
+                </div>
+                <div id="submit-button-cvr">
+                    <button id="submit-button" type="submit">Registrar</button>
+                </div>
+                <div id="forgot-pass">
+                    <a href="/login">Já possúi uma conta?</a>
+                </div>
+                <div id="bar"></div>
+            </div>
+        </form>
+    </div>
+    {{ template "scripts" }}
+    <script src="/assets/js/register.js"></script>
+</body>
+
 </html>

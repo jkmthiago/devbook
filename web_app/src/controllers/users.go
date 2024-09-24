@@ -27,6 +27,7 @@ func RegisterNewUser(w http.ResponseWriter, r *http.Request) {
 	response, err := http.Post(url, "application/json", bytes.NewBuffer(user))
 	if err != nil {
 		answers.JSON(w, http.StatusInternalServerError, answers.Error{Erro: err.Error()})
+		return
 	}
 
 	defer response.Body.Close()

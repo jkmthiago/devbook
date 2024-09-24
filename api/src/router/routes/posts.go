@@ -50,7 +50,7 @@ var postsRouts = []Route{
 	},
 	{
 		Uri:                      "/posts/{post_id}/unlike",
-		Method:                   http.MethodPut,
+		Method:                   http.MethodPost,
 		Funtion:                  controllers.Unlike,
 		AuthenticationIsRequired: true,
 	},

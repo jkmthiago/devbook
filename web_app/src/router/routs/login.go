@@ -24,4 +24,10 @@ var loginRouts = []Route{
 		Function:              controllers.Login,
 		AuthorizationRequired: false,
 	},
+	{
+		URI:                   "/logout",
+		Method:                http.MethodGet,
+		Function:              controllers.Logout,
+		AuthorizationRequired: true,
+	},
 }

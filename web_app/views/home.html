@@ -1,16 +1,57 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <style>
-        body{
-            background-color: #161616;
-        }
-    </style>
+    <title>DevBook</title>
+
+    <link rel="stylesheet" href="/assets/css/bootstrap.css">
 </head>
+
 <body>
-    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/4nJUuE7GO6v9i6KTu67wFO?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
+    {{ template "header" }}
+
+    <div class="container-fluid">
+        <div class="row mt-4">
+            <div class="col-xs-12 col-sm-12 col-md-5 col-lg-5 col-xl-5">
+                <h3> O que está pensando hoje? </h3>
+                <fieldset>
+                    <form id="new-post">
+                        <div class="form-group">
+                            <label for="title"> Titulo </label>
+                            <input type="text" class="form-control" id="title" name="title" required="required"
+                                placeholder="Insira o título da sua publicação">
+                        </div>
+                        <div class="form-group">
+                            <label for="content"> Conteúdo </label>
+                            <textarea class="form-control" name="content" id="content" required="required"
+                                placeholder="Insira o conteúdo da sua publicação"></textarea>
+                        </div>
+                        <button class="btn btn-primary" type="submit">
+                            Publicar
+                        </button>
+                    </form>
+                </fieldset>
+            </div>
+            <div class="col-xs-12 col-sm-12 col-md-7 col-ls-7 col-xl-7">
+                {{ range .Posts }}
+                    {{ if (eq .Autor_id $.UserId) }}
+                        {{ template "userPost" . }}
+                    {{ else }}
+                        {{ template "othersPost" . }}
+                    {{ end }}
+                {{ end }}
+            </div>
+        </div>
+    </div>
+
+    {{ template "footer" }}
+    <!-- <iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/4nJUuE7GO6v9i6KTu67wFO?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe> -->
 </body>
+
+{{ template "scripts" }}
+<script src="/assets/js/posts.js"></script>
+
 </html>

@@ -37,7 +37,7 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 
 	post.Autor_id = user_id
 
-	if err = post.Prepare(); err != nil{
+	if err = post.Prepare(); err != nil {
 		answers.Erro(w, http.StatusBadRequest, err)
 		return
 	}
@@ -133,7 +133,7 @@ func SearchPostsFromUser(w http.ResponseWriter, r *http.Request) {
 	answers.JSON(w, http.StatusOK, posts)
 }
 
-// Equita/Atualiza uma postagem 
+// Equita/Atualiza uma postagem
 func UpdatePost(w http.ResponseWriter, r *http.Request) {
 	userIdOnToken, err := authentication.ExtractUserId(r)
 	if err != nil {
@@ -228,7 +228,7 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = repository.DeletePost(post_id); err != nil{
+	if err = repository.DeletePost(post_id); err != nil {
 		answers.Erro(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -236,7 +236,7 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 	answers.JSON(w, http.StatusNoContent, nil)
 }
 
-func Like(w http.ResponseWriter, r *http.Request)  {
+func Like(w http.ResponseWriter, r *http.Request) {
 	parameters := mux.Vars(r)
 	post_id, err := strconv.ParseUint(parameters["post_id"], 10, 64)
 	if err != nil {
@@ -259,7 +259,7 @@ func Like(w http.ResponseWriter, r *http.Request)  {
 	answers.JSON(w, http.StatusNoContent, nil)
 }
 
-func Unlike(w http.ResponseWriter, r *http.Request)  {
+func Unlike(w http.ResponseWriter, r *http.Request) {
 	parameters := mux.Vars(r)
 	post_id, err := strconv.ParseUint(parameters["post_id"], 10, 64)
 	if err != nil {
@@ -279,5 +279,5 @@ func Unlike(w http.ResponseWriter, r *http.Request)  {
 		return
 	}
 
-	answers.JSON(w, http.StatusNoContent, nil)	
+	answers.JSON(w, http.StatusNoContent, nil)
 }

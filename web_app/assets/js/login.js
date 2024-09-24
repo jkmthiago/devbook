@@ -16,6 +16,10 @@ function loginUser(event) {
         window.location = "/home"
     }).fail(function (erro) {
         console.log(erro)
-        alert("Usuário ou Senha Inválidos!")
+        Swal.fire(
+            "Usuário ou Senha Incorreta!",
+            "Por gentileza confirme se o usuáro ou a senha inserida estão corretos!",
+            "error"
+        )
     })
 }

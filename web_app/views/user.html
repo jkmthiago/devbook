@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevBook - {{ .User.Name }}</title>
+
+    <link rel="stylesheet" href="/assets/css/bootstrap.css">
+</head>
+
+<body>
+    {{ template "header" }}
+
+    {{ $FolloweByLoggedUser := false }}
+    {{ range .User.Followers }}
+    {{ if (eq .Id $.LoggedUserId) }}
+    {{ $FolloweByLoggedUser = true }}
+    {{ end }}
+    {{ end }}
+
+    {{ $IsThisTheUser := false}}
+    {{if (eq .User.Id $.LoggedUserId)}}
+    {{ $IsThisTheUser = true}}
+    {{ end }}
+
+    <div class="container-fluid">
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Perfil do Usuário</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">
+                            {{ .User.Name }} - {{ .User.Nick }} - Membro desde {{ .User.CreatedIn.Format "02/01/2006"}}
+                        </h6>
+
+                        <p class="card-text">
+                            <a href="#">
+                                Seguidores {{ len .User.Followers }}
+                            </a>
+                        </p>
+
+                        <p class="card-text">
+                            <a href="#">
+                                Seguindo {{ len .User.Following }}
+                            </a>
+                        </p>
+
+                        {{ if (eq $IsThisTheUser false)}}
+                        <a href="#">
+                            {{ if $FolloweByLoggedUser }}
+                            <button id="follow" class="btn btn-info" data-user-id="(( User.Id ))">Deixar de
+                                Seguir</button>
+                            {{ else }}
+                            <button id="follow" class="btn btn-info" data-user-id="(( User.Id ))">Seguir</button>
+                            {{ end }}
+                        </a>
+                        {{ end }}
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Publicações de {{.User.Nick}}</h5>
+                        <p class="card-text">
+                            {{ range .User.Posts}}
+                                {{template "othersPost" .}}
+                            {{else}}
+                                <p class="text-muted text-center">
+                                    Nenhuma publicação por enquanto...
+                                </p>
+                            {{end}}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+    {{ template "footer" }}
+    {{ template "scripts" }}
+    <script src="/assets/js/posts.js"></script>
+</body>
+
+</html>

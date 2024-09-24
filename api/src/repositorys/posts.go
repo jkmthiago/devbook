@@ -175,7 +175,7 @@ func (repository Posts) SearchPostsFromUser(user_id uint64) ([]models.Post, erro
 
 func (repository Posts) Like(post_id uint64) error {
 	statement, err := repository.database.Prepare(`
-		update into posts set likes = likes + 1 where id = $1 
+		update posts set likes = likes + 1 where id = $1 
 	`)
 	if err != nil {
 		return err
@@ -192,7 +192,7 @@ func (repository Posts) Like(post_id uint64) error {
 
 func (repository Posts) Unlike(post_id uint64) error {
 	statement, err := repository.database.Prepare(`
-		update into posts set likes = 
+		update posts set likes = 
 		case when likes > 0 then likes - 1
 		else 0 end
 		where id = $1 

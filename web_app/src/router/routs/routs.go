@@ -18,6 +18,7 @@ func RouteConfig(router *mux.Router) *mux.Router {
 	webAppRoutes := loginRouts
 	webAppRoutes = append(webAppRoutes, userRoutes...)
 	webAppRoutes = append(webAppRoutes, homePageRoute)
+	webAppRoutes = append(webAppRoutes, postRoutes...)
 
 	for _, webRoute := range webAppRoutes {
 
