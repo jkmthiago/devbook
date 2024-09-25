@@ -10,13 +10,13 @@
 </head>
 
 <body>
-    {{ template "header" }}
+    {{ template "header" .LoggedUserId }}
 
     {{ $FolloweByLoggedUser := false }}
     {{ range .User.Followers }}
-    {{ if (eq .Id $.LoggedUserId) }}
-    {{ $FolloweByLoggedUser = true }}
-    {{ end }}
+        {{ if (eq .Id $.LoggedUserId) }}
+            {{ $FolloweByLoggedUser = true }}
+        {{ end }}
     {{ end }}
 
     {{ $IsThisTheUser := false}}
@@ -29,19 +29,23 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
+                        {{if $IsThisTheUser}}
+                        <h5 class="card-title">Meu Perfil</h5>
+                        {{else}}
                         <h5 class="card-title">Perfil do Usuário</h5>
+                        {{end}}
                         <h6 class="card-subtitle mb-2 text-muted">
                             {{ .User.Name }} - {{ .User.Nick }} - Membro desde {{ .User.CreatedIn.Format "02/01/2006"}}
                         </h6>
 
                         <p class="card-text">
-                            <a href="#">
+                            <a href="#" data-toggle="modal" data-target="#modal-followers">
                                 Seguidores {{ len .User.Followers }}
                             </a>
                         </p>
 
                         <p class="card-text">
-                            <a href="#">
+                            <a href="#" data-toggle="modal" data-target="#modal-following">
                                 Seguindo {{ len .User.Following }}
                             </a>
                         </p>
@@ -49,13 +53,25 @@
                         {{ if (eq $IsThisTheUser false)}}
                         <a href="#">
                             {{ if $FolloweByLoggedUser }}
-                            <button id="follow" class="btn btn-info" data-user-id="(( User.Id ))">Deixar de
+                            <button id="unfollow" class="btn btn-info" data-user-id="{{ .User.Id }}">Deixar de
                                 Seguir</button>
                             {{ else }}
-                            <button id="follow" class="btn btn-info" data-user-id="(( User.Id ))">Seguir</button>
+                            <button id="follow" class="btn btn-info" data-user-id="{{.User.Id}}">Seguir</button>
                             {{ end }}
                         </a>
+                        {{ else }}
+                        <div class="row">
+                            <div class="col-12">
+                                <a href="/edit-user" class="card-link">
+                                    <button class="btn btn-info">Editar Perfil</button>
+                                </a>
+                                <a href="/updatePassword" class="card-link">
+                                    <button class="btn btn-info">Atualizar Senha</button>
+                                </a>
+                            </div>
+                        </div>
                         {{ end }}
+                        
 
                     </div>
                 </div>
@@ -66,10 +82,18 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
+                        {{ if (eq $IsThisTheUser false)}}
                         <h5 class="card-title">Publicações de {{.User.Nick}}</h5>
+                        {{else}}
+                        <h5 class="card-title">Minhas Publicações</h5>
+                        {{end}}
                         <p class="card-text">
                             {{ range .User.Posts}}
-                                {{template "othersPost" .}}
+                                {{ if $IsThisTheUser }}
+                                    {{ template "userPost" . }}
+                                {{ else }}
+                                    {{ template "othersPost" . }}
+                                {{ end }}
                             {{else}}
                                 <p class="text-muted text-center">
                                     Nenhuma publicação por enquanto...
@@ -80,12 +104,21 @@
                 </div>
             </div>
         </div>
+        {{if $IsThisTheUser}}
+        <br><br>
+        <a id="delete-user" class="card-link">
+            <button class="btn btn-info">Deletar a conta permanentemente</button>
+        </a>
+        <br><br>
+        {{end}}
     </div>
-    
 
+    {{ template "modal-followers" .User}}
+    {{ template "modal-following" .User}}
     {{ template "footer" }}
     {{ template "scripts" }}
     <script src="/assets/js/posts.js"></script>
+    <script src="/assets/js/user.js"></script>
 </body>
 
 </html>

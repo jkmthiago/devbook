@@ -14,7 +14,7 @@
 {{ end }}
 
 {{ define "postHeader" }}
-<a href="#"> {{ .Autor_nick }} - {{.Created_in.Format "02/01/2006"}} </a>
+<a href="/users/{{.Autor_id}}"> {{ .Autor_nick }} - {{.Created_in.Format "02/01/2006"}} </a>
 <h1 class="display-4">{{ .Title }}</h1>
 <p class="lead">{{ .Content }}</p>
 <hr class="my-4">

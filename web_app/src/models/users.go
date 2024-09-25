@@ -50,21 +50,21 @@ func SearchUsersCompleteData(user_id uint64, r *http.Request) (User, error) {
 
 		case loadFollowers := <-followersChannel:
 			if loadFollowers == nil {
-				loadFollowers = []User{}
+				return User{}, errors.New("error searching this user's followers")
 			}
 
 			followers = loadFollowers
 
 		case loadFollowing := <-followingChannel:
 			if loadFollowing == nil {
-				loadFollowing = []User{}
+				return User{}, errors.New("error searching who this user follow")
 			}
 
 			following = loadFollowing
 			
 		case loadPosts := <-postsChannel:
 			if loadPosts == nil {
-				loadPosts = []Post{}
+				return User{}, errors.New("error searching this user's posts")
 			}
 
 			posts = loadPosts
@@ -117,6 +117,11 @@ func SearchUsersFollowers(channel chan<- []User, user_id uint64, r *http.Request
 		return
 	}
 
+	if users == nil {
+		channel <- make([]User, 0)
+		return
+	}
+
 	channel <- users
 }
 
@@ -137,6 +142,11 @@ func SearchUsersFollowingAccounts(channel chan<- []User, user_id uint64, r *http
 		return
 	}
 
+	if users == nil {
+		channel <- make([]User, 0)
+		return
+	}
+
 	channel <- users
 }
 
@@ -154,6 +164,11 @@ func SearchUsersPosts(channel chan<- []Post, user_id uint64, r *http.Request) {
 	var posts []Post
 	if err = json.NewDecoder(response.Body).Decode(&posts); err != nil {
 		channel <- nil
+		return
+	}
+
+	if posts == nil {
+		channel <- make([]Post, 0)
 		return
 	}
 

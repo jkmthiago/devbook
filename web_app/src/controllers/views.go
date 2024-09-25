@@ -135,16 +135,14 @@ func LoadUserPage(w http.ResponseWriter, r *http.Request) {
 		answers.JSON(w, http.StatusBadRequest, answers.Error{Erro: err.Error()})
 		return
 	}
+	cookie, _ := cookies.ReadCookies(r)
+	loggedUserId, _ := strconv.ParseUint(cookie["id"], 10, 64)
 
 	user, err := models.SearchUsersCompleteData(user_id, r)
 	if err != nil {
 		answers.JSON(w, http.StatusInternalServerError, answers.Error{Erro: err.Error()})
 		return
 	}
-
-	cookie, _ := cookies.ReadCookies(r)
-	loggedUserId, _ := strconv.ParseUint(cookie["id"], 10, 64)
-	fmt.Println(loggedUserId)
 
 	utils.ExecTemplates(w, "user.html", struct {
 		User         models.User
@@ -153,4 +151,27 @@ func LoadUserPage(w http.ResponseWriter, r *http.Request) {
 		User:         user,
 		LoggedUserId: loggedUserId,
 	})
+}
+
+func LoadEditUser(w http.ResponseWriter, r *http.Request) {
+	cookie, _ := cookies.ReadCookies(r)
+	loggedUserId, _ := strconv.ParseUint(cookie["id"], 10, 64)
+
+	channel := make(chan models.User)
+	go models.SearchUsersData(channel, loggedUserId, r)
+	user := <-channel
+
+	if user.Id == 0 {
+		answers.JSON(w, http.StatusInternalServerError, answers.Error{Erro: "error searching the user"})		
+		return
+	}
+
+	utils.ExecTemplates(w, "edit-users.html", user)
+}
+
+func LoadUpdatePassword(w http.ResponseWriter, r *http.Request) {
+	cookie, _ := cookies.ReadCookies(r)
+	loggedUserId, _ := strconv.ParseUint(cookie["id"], 10, 64)
+
+	utils.ExecTemplates(w, "updatePassword.html", loggedUserId)
 }

@@ -9,6 +9,7 @@ import (
 	"api/src/security"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -113,6 +114,7 @@ func ReadUser(w http.ResponseWriter, r *http.Request) {
 // UPDATE - PUT INSIDE NEW TOYS AND TAKE OUT THE BROKEN ONES
 // Atualiza um usuário específico no banco de dados
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("chegou a requisição na api")
 	parameters := mux.Vars(r)
 
 	id, err := strconv.ParseUint(parameters["id"], 10, 64)
