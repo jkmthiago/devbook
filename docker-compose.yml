@@ -1,8 +1,9 @@
 services:
   go:
+    container_name: api_go
     image: "mcr.microsoft.com/devcontainers/go:1-1.22-bookworm"
     volumes:
-      - ./:/go/src/app
+      - ./api:/go/src/app
     ports:
       - 3000:3000
       - 5000:5000
@@ -12,6 +13,7 @@ services:
     env_file:
       - ./dotenv/.env
   db:
+    container_name: bd_postgresql
     image: postgres:16
     volumes:
       - ./data:/var/lib/postgresql/data
@@ -20,3 +22,10 @@ services:
       - 2345:5432
     env_file:
       - ./dotenv/.env
+  node:
+    container_name: web_app_node
+    image: node:alpine3.20
+    volumes:
+      - ./web_app/web_app:/node/src/app
+    ports:
+      - 5173:5173

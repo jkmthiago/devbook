@@ -1,0 +1,19 @@
+<script setup>
+
+</script>
+
+<!-- --- --- --- --- --- --- --- --- --- --- --- -->
+
+<template>
+    <footer class="text-muted mt-4">
+        <div class="container">
+            <p>
+                ©Devbook 2024. Todos os direitos reservados
+            </p>
+        </div>
+    </footer>
+</template>
+
+<!-- --- --- --- --- --- --- --- --- --- --- --- -->
+
+<style></style>
